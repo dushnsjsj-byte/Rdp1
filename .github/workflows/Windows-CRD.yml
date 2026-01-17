@@ -1,0 +1,43 @@
+name: Windows CRD Setup and Run
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  winrdp1:
+    name: winrdp1
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Initializing Setup
+      run: echo "Initializing Chrome Remote Desktop setup..."
+
+    - name: Start Chrome Remote Desktop Host
+      shell: powershell
+      run: |
+        $crdPath = "${env:PROGRAMFILES(X86)}\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe"
+        $code = "4/0ASc3gC0Vx4mPUjF6rKtcCTXo7IYJqKMs_u8UTmxB_sMBQ_o1pXdY16qT6t9qLCAXnE0PwQ"
+        $redirectUrl = "https://remotedesktop.google.com/_/oauthredirect"
+        $name = $env:COMPUTERNAME
+        $pin = "201520"
+
+        # Start the Chrome Remote Desktop host process with parameters
+        Start-Process -FilePath $crdPath -ArgumentList "--code=`"$code`" --redirect-url=`"$redirectUrl`" --name=$name --pin=$pin" -NoNewWindow
+
+    - name: Keep Alive
+      shell: powershell
+      run: |
+        while ($true) {
+          Start-Sleep -Seconds 60
+          Write-Output "Keeping session alive..."
+        }
+
+    - name: Post Run Cleanup
+      if: always()
+      run: echo "Post run actions/checkout@v2 cleanup if needed"
